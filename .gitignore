@@ -4,3 +4,5 @@ package-lock.json
 .vscode/
 .DS_Store
 dist/
+tsconfig.tsbuildinfo
+/packages/*/lib/
