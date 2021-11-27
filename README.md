@@ -1,8 +1,39 @@
 # Macro
 
+## Motivation
+
 1. Make components, flows easier to configure.
-2. Introduce _Macro_ to concisely describe blocks or pages, which can also eject to detailed code.
-3. Provide a better way to make a low-code platform.
+2. For some big but low-logic components and flows, be able to transform them into actual detailed code.
+3. Introduce _Macro_ to concisely describe blocks or pages, which can also eject to detailed code.
+4. Provide a better way to make a low-code platform.
+
+## Basic Example
+
+```jsx
+// Example in Vue3 style
+
+// [1] "host" must be explicitly wrapped in something, eg. "defineComponent"
+const MyPage = defineComponent({
+  setup() {
+    // [2]
+  },
+  render() {
+    return (
+      // use a "layout macro"
+      <macro:card-list list={array}>
+        <item>
+          <macro:card
+            style="theme1"
+            title={"Hello World"}
+            description={item.bar}
+            icon={item.icon}
+          />
+        </item>
+      </macro:card-list>
+    );
+  },
+});
+```
 
 ## Concept
 
@@ -163,9 +194,7 @@ const MyCallback = ComposedFunction(async () => {
   await test();
   await test2();
 
-  {
-    macro("request");
-
+  macro_request: {
     url: "http://example.com";
     timeout: 3000;
     before: async () => {};
@@ -284,12 +313,11 @@ Meanwhile _Macros_ can also check whether they are placed properly. Some example
 For example, in this code:
 
 ```jsx
-let x = 
-<macro:card-list>
-  <item>
-    
-  </item>
-</macro:card-list>
+let x = (
+  <macro:card-list>
+    <item></item>
+  </macro:card-list>
+);
 ```
 
-The `<macro:card>` is 
+The `<macro:card>` is
