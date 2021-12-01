@@ -36,10 +36,10 @@ Inspired by React hooks, Vue composition API and Macro from C/C++, a new way to 
 First of all, we import and use the original component like this:
 
 ```jsx
-import SmartTable from "smart-table";
+import SmartTable from 'smart-table';
 
 function MyPage() {
-  const dataSource = useDataSource("album-collection");
+  const dataSource = useDataSource('album-collection');
 
   return (
     <div>
@@ -49,59 +49,78 @@ function MyPage() {
 }
 ```
 
-The smart table may retrieve **data structures and protocols** from `dataSource`, generate something like this, in runtime.
+The smart table may retrieve **data structures and protocols** from `dataSource` in runtime, and render something like this:
 
 ![](./figure1-basic-smart-table.drawio.svg)
 
-In fact, the SmartTable also implicitly reads data, offset, total from `dataSource`. The action buttons and paginator may implicitly call methods of `dataSource`.
+In the rendered completed page, the SmartTable also implicitly reads current state from `dataSource`, including _protocol, structures, data, offset, total(count)_. The action buttons and paginator may implicitly call methods of `dataSource`.
 
-All those automatic blocks are generated **in runtime**. They can be **extracted to code**.
+All those automatic blocks are generated **in runtime**. Their code and configurations can be **extracted** from a running page (as illustrated as the orange circles below).
 
-### Disassemble the `dataSource`
+![](./figure2-smart-table-source-of-truth.drawio.svg)
 
-Before disassembling the SmartTable, let's imagine the behaviors of `dataSource`
+With those extracted code, we can quickly start implementing more elaborated requirements like adding extra buttons and procedures.
 
-It plays the part of a **model** (of MVC/MVVM) and a **state manager**.
+For example, we extract the "actions" slot. There are two parts extracted:
 
-```ts
-interface AlbumCollectionDataSource {
-  // ------------------------------------------
-  // implements List protocol
-  items: Album[];
-  $itemSchema: Protocol.List.ItemSchema;
+- **hooks**: put into the host component's _hooks section_
+- **template**: put into the host component's _`<SmartTable>`'s children section_
 
-  // ------------------------------------------
-  // implements Actions protocol
-  actions: AlbumCollectionAction
-  $actionsSchema: Protocol.Actions.ActionsSchema
+```jsx
+import SmartTable from 'smart-table';
 
-  // ------------------------------------------
-  // implements CountablePaging protocol
+function MyPage() {
+  const dataSource = useDataSource('album-collection');
 
-  offset: number; // current offset
-  total: number; // current total
-  pageSize: number;
-  $countablePaging
+  /* extracted hooks ------------------- */
+  const handleReloadAction = useCallback(() => {
+    dataSource.$actions.reload();
+  }, [dataSource]);
+  /* ----------------------------------- */
 
-  // ------------------------------------------
-  // implements Filter protocol
-
-  filter: AlbumCollectionFilterParams;
-  $filterSchema: Protocol.Filtering.FilterSchema;
-  resetFilter(): void;
+  return (
+    <div>
+      <SmartTable dataSource={dataSource}>
+        {/* extracted "actions" template ------ */}
+        <template slot="actions">
+          <Button onClick={handleReloadAction}>Reload</Button>
+        </template>
+        {/* ----------------------------------- */}
+      </SmartTable>
+    </div>
+  );
 }
-
-// customized by Albums the DataSource
-interface AlbumCollectionFilterParams {
-  id: string;
-  idMode: "exact" | "";
-}
-
-interface Album {}
 ```
 
-You may have noticed lots of `Protocol.XXX.XXXSchema`. If the DataSource has implemented a protocol, a schema is required.
+When "actions" template is explicitly provided to SmartTable, the code goes to Level 3 and SmartTable will not automatically infer the "actions" template.
 
-- Filter Protocl
+### Extracting
 
-- `$filterSchema` define all available filter params, and default filter layout, can be generated from tsdoc of AlbumCollectionFilterParams
+To make extracting works, the SmartTable must provide sufficient information, including how those code snippets look like and the symbols (variables) across those snippets.
+
+The required information includes:
+
+- Snippets:
+  - Belong to host's which section
+  - List of shared variables / symbols between snippets
+  - The content of snippets:
+    - Code AST is preferred
+
+To make those snippets extractable, the developer of SmartTable, must generated the AST manually, and the runtime framework.
+
+```tsx
+import {defineSnippetGenerator, useSnippet} from "@runtime";
+// example SmartTable implements
+
+export const SmartTable = (props: SmartTableProps) => {
+  const actions = useSnippet(actionsGenerator, props)
+};
+
+const actionsGenerator = defineSnippetGenerator((ctx, props: SmartTableProps) => {
+  props.
+})
+```
+
+### Blend the extracted code
+
+Now we get the extracted information. It's time to put code together.
