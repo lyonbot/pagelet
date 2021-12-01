@@ -1,0 +1,30 @@
+{
+  "name": "@pagelet/composed-model",
+  "version": "1.0.0",
+  "description": "",
+  "author": "lyonbot <lyonbot@outlook.com>",
+  "homepage": "https://github.com/lyonbot/pagelet/tree/master/packages/composed-model#readme",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "scripts": {
+    "prepack": "npm run build",
+    "build": "node ../../dev-tools/script build",
+    "prepareDev": "node ../../dev-tools/script prepareDev",
+    "dev": "node ../../dev-tools/script dev",
+    "test": "jest"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lyonbot/pagelet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lyonbot/pagelet/issues"
+  }
+}
